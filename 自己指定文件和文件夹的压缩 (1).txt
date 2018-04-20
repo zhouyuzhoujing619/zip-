@@ -1,0 +1,138 @@
+package com.svw.domssk.actions.api.bulletin;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.tools.zip.ZipEntry;
+import org.apache.tools.zip.ZipOutputStream;
+
+public class Testfolder {
+    
+   List<File> singleFile=new ArrayList<File>();
+   List<File>  fileFolders=new ArrayList<File>();
+   String target="";
+   public  Testfolder(){ }
+   public Testfolder( List<File> file,List<File>  folder,String ziptarget){
+       this.singleFile=file;
+       this.fileFolders=folder;
+       this.target=ziptarget;
+   }
+   
+   public  void  toZip(List<File> singleFile,List<File>  fileFolders,String target){
+       ZipOutputStream out = null;  
+       try {  
+           out = new ZipOutputStream(new FileOutputStream(target));  
+           out.setEncoding("GBK"); 
+           //单个文件进行压缩
+           for(File file:singleFile){  
+               zipFile(file, out, "");  
+           }  
+           //多个文件进行压缩
+           for(File folde:fileFolders){
+                   this.zipDirectory(folde, out, "");   
+           }
+           System.out.println("压缩完毕");  
+       } catch (Exception e) {  
+           e.printStackTrace();  
+       } finally {  
+           try {  
+               if (out != null)  
+                   out.close();  
+           } catch (IOException e) {  
+               e.printStackTrace();  
+           }  
+       }  
+   }
+   
+   /** 
+    * 压缩单个文件 
+    *  
+    * @param srcfile 
+    */  
+   public void zipFile(File srcfile, ZipOutputStream out, String basedir) {  
+       if (!srcfile.exists())  
+           return;  
+ 
+       byte[] buf = new byte[1024];  
+       FileInputStream in = null;  
+ 
+       try {  
+           int len;  
+           in = new FileInputStream(srcfile);  
+           out.putNextEntry(new ZipEntry(basedir + srcfile.getName()));  
+ 
+           while ((len = in.read(buf)) > 0) {  
+               out.write(buf, 0, len);  
+           }  
+       } catch (Exception e) {  
+           e.printStackTrace();  
+       } finally {  
+           try {  
+               if (out != null)  
+                   out.closeEntry();  
+               if (in != null)  
+                   in.close();  
+           } catch (IOException e) {  
+               e.printStackTrace();  
+           }  
+       }  
+   }  
+   
+   /** 
+    * 压缩文件夹里的文件 
+    * 起初不知道是文件还是文件夹--- 统一调用该方法 
+    * @param file 
+    * @param out 
+    * @param basedir 
+    */  
+   private void compress(File file, ZipOutputStream out, String basedir) {  
+       /* 判断是目录还是文件 */  
+       if (file.isDirectory()) {  
+           this.zipDirectory(file, out, basedir);  
+       } else {  
+           this.zipFile(file, out, basedir);  
+       }  
+   }  
+   
+   /** 
+    * 压缩文件夹 
+    * @param dir 
+    * @param out 
+    * @param basedir 
+    */  
+   public void zipDirectory(File dir, ZipOutputStream out, String basedir) {  
+       if (!dir.exists())  
+           return;  
+ 
+       File[] files = dir.listFiles();  
+       for (int i = 0; i < files.length; i++) {  
+           /* 递归 */  
+           compress(files[i], out, basedir + dir.getName() + "/");  
+       }  
+   }  
+   
+   
+   public static void main(String[] args) {
+    try {
+        //单个文件
+           List<File> singleFile=new ArrayList<File>();
+           singleFile.add(new File("E:/sk_doms/5.测试阶段/集成测试/授权跨区销售管理/授权跨区销售管理-集成测试.xlsx"));
+           singleFile.add(new File("D:/MyDownloads/Download/postMan/使用说明 .txt"));
+           //文件夹
+           List<File> folder=new ArrayList<File>();
+           folder.add(new File("D:/MyDownloads/Download/jd-gui"));
+           folder.add(new File("D:/skoda_doms/temp/78"));
+           String target="D://zhouyuzhouyu.zip";
+           new Testfolder(singleFile, folder, target).toZip(singleFile, folder, target);;
+    } catch (Exception e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+    }
+}
+   
+   
+}
